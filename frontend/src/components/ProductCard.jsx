@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getImageForTitle, getRandomPlaceholder } from '../utils/getImageForTitle';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { getImageForTitle, getRandomPlaceholder } from '../utils/getImageForTitle'
+import { getProxiedImageUrl } from '../utils/api'
 
 /**
  * ProductCard Component
@@ -78,7 +79,7 @@ const ProductCard = ({ product, onAddToCart, onToggleFavorite, isFavorite = fals
           </div>
         )}
        <img
-  src={product.image}
+  src={getProxiedImageUrl(product.image)}
   alt={product.name}
   loading="lazy"
   onLoad={() => setImageLoaded(true)}

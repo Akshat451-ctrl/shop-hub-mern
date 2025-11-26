@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
+import { getProxiedImageUrl } from '../utils/api'
 
 const Profile = ({ user }) => {
   const [favorites, setFavorites] = useState([])
@@ -335,7 +336,11 @@ const Profile = ({ user }) => {
               <div className="space-y-4">
                 {favorites.slice(0, 5).map((product) => (
                   <div key={product._id} className="flex items-center gap-4 p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl border border-red-100 hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
-                    <img src={product.image} alt={product.name} className="w-16 h-16 object-cover rounded-xl shadow-sm" />
+                    <img 
+                      src={getProxiedImageUrl(product.image)}
+                      alt={product.name} 
+                      className="w-16 h-16 object-cover rounded-xl shadow-sm" 
+                    />
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{product.name}</h3>
                       <p className="text-red-600 font-bold text-lg">${product.price}</p>

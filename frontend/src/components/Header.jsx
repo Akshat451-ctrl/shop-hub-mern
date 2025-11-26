@@ -234,7 +234,7 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSuggestionClick(product.name); } }}
                     >
                       <img 
-                        src={product.image} 
+                        src={getProxiedImageUrl(product.image)}
                         alt={product.name} 
                         className="w-12 h-12 object-cover rounded mr-3"
                       />
@@ -419,7 +419,7 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSuggestionClick(product.name); setMobileOpen(false); } }}
                     >
                       <img 
-                        src={product.image} 
+                        src={getProxiedImageUrl(product.image)}
                         alt={product.name} 
                         className="w-10 h-10 object-cover rounded mr-2"
                       />

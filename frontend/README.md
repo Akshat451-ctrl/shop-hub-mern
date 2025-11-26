@@ -65,7 +65,18 @@ npm run build
 ### API Configuration
 The frontend is configured to use the live backend API at `https://shop-hub-mern.onrender.com`.
 
-For local development, you can change the API URL back to `http://localhost:5000` by updating the axios calls in:
+**Environment Variables:**
+- `VITE_API_URL`: Backend API URL (default: `https://shop-hub-mern.onrender.com`)
+
+**Image Proxy:**
+All product images are routed through the backend proxy (`/proxy?url=`) to bypass CORS restrictions from external image sources (e.g., Amazon S3).
+
+For local development, create a `.env` file:
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+To change the API URL, update the axios calls in:
 - `src/App.jsx`
 - `src/components/Header.jsx`
 - `src/components/AuthModal.jsx`

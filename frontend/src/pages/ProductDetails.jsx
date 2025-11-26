@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { getImageForTitle, getRandomPlaceholder } from '../utils/getImageForTitle'
+import { getProxiedImageUrl } from '../utils/api'
 // import { getImageForTitle, getRandomPlaceholder } from '../utils/getImageForTitle'
 
 const ProductDetails = ({ onAddToCart, onToggleFavorite, favorites = [] }) => {
@@ -125,7 +126,11 @@ const ProductDetails = ({ onAddToCart, onToggleFavorite, favorites = [] }) => {
             <span className="text-gray-700">{product.name}</span>
           </nav>
           <div className="w-full h-[420px] flex items-center justify-center bg-gray-50 rounded-lg">
-            <img src={selectedImage || product.image} alt={product.name} className="max-h-[380px] object-contain" />
+            <img 
+              src={getProxiedImageUrl(selectedImage || product.image)}
+              alt={product.name} 
+              className="max-h-[380px] object-contain" 
+            />
           </div>
           {product.images && product.images.length > 1 && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
@@ -139,7 +144,11 @@ const ProductDetails = ({ onAddToCart, onToggleFavorite, favorites = [] }) => {
                       : 'border-gray-200 hover:border-primary-300 hover:shadow-sm'
                   }`}
                 >
-                  <img src={img} alt={`thumb-${idx}`} className="w-20 h-16 object-cover rounded" />
+                  <img 
+                    src={getProxiedImageUrl(img)}
+                    alt={`thumb-${idx}`} 
+                    className="w-20 h-16 object-cover rounded" 
+                  />
                 </button>
               ))}
             </div>

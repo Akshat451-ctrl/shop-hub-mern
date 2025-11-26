@@ -40,6 +40,31 @@ app.use('/api', productRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 
+// Image Proxy Route (to bypass CORS for Amazon/external images)
+app.get('/proxy', async (req, res) => {
+  try {
+    const imageUrl = req.query.url;
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Image URL is required' });
+    }
+
+    const fetch = (await import('node-fetch')).default;
+    const response = await fetch(imageUrl);
+    
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch image' });
+    }
+
+    // Forward the content type and stream the image
+    res.setHeader('Content-Type', response.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    response.body.pipe(res);
+  } catch (error) {
+    console.error('Proxy error:', error);
+    res.status(500).json({ error: 'Failed to proxy image' });
+  }
+});
+
 // Health Check
 app.get('/', (req, res) => {
   res.json({
