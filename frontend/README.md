@@ -63,11 +63,16 @@ npm run build
 ## Configuration
 
 ### API Configuration
-The frontend expects the backend API to be running at `http://localhost:5000`.
+The frontend is configured to use the live backend API at `https://shop-hub-mern.onrender.com`.
 
-To change the API URL, update the axios calls in:
+For local development, you can change the API URL back to `http://localhost:5000` by updating the axios calls in:
 - `src/App.jsx`
 - `src/components/Header.jsx`
+- `src/components/AuthModal.jsx`
+- `src/components/Recommendations.jsx`
+- `src/components/FeaturedSection.jsx`
+- `src/pages/ProductDetails.jsx`
+- `src/pages/Profile.jsx`
 
 ### Tailwind Configuration
 Customize Tailwind in `tailwind.config.js`:

@@ -21,7 +21,7 @@ const ProductDetails = ({ onAddToCart, onToggleFavorite, favorites = [] }) => {
     const fetchProduct = async () => {
       try {
         setLoading(true)
-        const res = await axios.get(`http://localhost:5000/api/products/${id}`)
+        const res = await axios.get(`https://shop-hub-mern.onrender.com/api/products/${id}`)
         // API returns { success: true, product }
         const payload = res.data && res.data.product ? res.data.product : res.data
         setProduct(payload)
@@ -56,14 +56,14 @@ const ProductDetails = ({ onAddToCart, onToggleFavorite, favorites = [] }) => {
 
     setSubmittingReview(true)
     try {
-      await axios.post(`http://localhost:5000/api/products/${id}/reviews`, {
+      await axios.post(`https://shop-hub-mern.onrender.com/api/products/${id}/reviews`, {
         rating: reviewRating,
         comment: reviewComment
       }, {
         headers: { Authorization: `Bearer ${token}` }
       })
       // Refresh product data
-      const res = await axios.get(`http://localhost:5000/api/products/${id}`)
+      const res = await axios.get(`https://shop-hub-mern.onrender.com/api/products/${id}`)
       const payload = res.data && res.data.product ? res.data.product : res.data
       setProduct(payload)
       setReviewComment('')

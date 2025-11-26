@@ -13,7 +13,7 @@ const FeaturedSection = ({ onAddToCart, onToggleFavorite, favorites = [], user }
   const fetchFeatured = async () => {
     try {
       setLoading(true)
-      const res = await axios.get('http://localhost:5000/api/products?sort=rating&page=1&limit=8')
+      const res = await axios.get('https://shop-hub-mern.onrender.com/api/products?sort=rating&page=1&limit=8')
       const products = res.data.products || res.data
       setFeatured(products)
     } catch (err) {

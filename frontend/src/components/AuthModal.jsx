@@ -35,7 +35,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
         ? { email: formData.email, password: formData.password }
         : formData;
 
-      const response = await axios.post(`http://localhost:5000${endpoint}`, payload);
+      const response = await axios.post(`https://shop-hub-mern.onrender.com${endpoint}`, payload);
       
       // Store token and user data
       localStorage.setItem('token', response.data.token);

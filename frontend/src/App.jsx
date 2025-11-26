@@ -117,7 +117,7 @@ function App() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/products');
+      const response = await axios.get('https://shop-hub-mern.onrender.com/api/products');
       const productsData = response.data.products || response.data;
       setAllProducts(productsData);
       
@@ -138,7 +138,7 @@ function App() {
    */
   const loadUserFavorites = async (token) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/recommendations/favorites', {
+      const response = await axios.get('https://shop-hub-mern.onrender.com/api/recommendations/favorites', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const favoriteProducts = response.data.favorites || [];
@@ -279,7 +279,7 @@ function App() {
       const token = localStorage.getItem('token');
       // Making API call to toggle favorite
       const response = await axios.post(
-        'http://localhost:5000/api/recommendations/toggle-favorite',
+        'https://shop-hub-mern.onrender.com/api/recommendations/toggle-favorite',
         { productId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
