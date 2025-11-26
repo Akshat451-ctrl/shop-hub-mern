@@ -6,13 +6,13 @@ import ProductCard from './ProductCard';
  * Recommendations Component
  * Displays personalized product recommendations
  */
-const Recommendations = ({ user }) => {
+const Recommendations = ({ user, searchTerm, onAddToCart, onToggleFavorite, favorites = [] }) => {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchRecommendations();
-  }, [user]);
+  }, [user, searchTerm]);
 
   const fetchRecommendations = async () => {
     try {
@@ -20,7 +20,12 @@ const Recommendations = ({ user }) => {
       const token = localStorage.getItem('token');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
-      const response = await axios.get('http://localhost:5000/api/recommendations', { headers });
+      // If a searchTerm is provided, include it as a query param so backend can prefer search-based recommendations
+      const url = searchTerm && searchTerm.trim()
+        ? `http://localhost:5000/api/recommendations?q=${encodeURIComponent(searchTerm.trim())}`
+        : 'http://localhost:5000/api/recommendations';
+
+      const response = await axios.get(url, { headers });
       const recommendationsData = response.data.recommendations || response.data;
       setRecommendations(recommendationsData);
     } catch (error) {
@@ -61,7 +66,7 @@ const Recommendations = ({ user }) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {recommendations.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            <ProductCard key={product._id} product={product} onAddToCart={onAddToCart} onToggleFavorite={onToggleFavorite} isFavorite={favorites?.includes(product._id)} user={user} />
           ))}
         </div>
       </div>

@@ -4,9 +4,27 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import FilterBar from './components/FilterBar';
 import ProductGrid from './components/ProductGrid';
+import ProductCard from './components/ProductCard';
 import Recommendations from './components/Recommendations';
+import FeaturedSection from './components/FeaturedSection';
+import Testimonials from './components/Testimonials';
 import AuthModal from './components/AuthModal';
 import Toast from './components/Toast';
+import Footer from './components/Footer';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import ProductDetails from './pages/ProductDetails';
+import CartPage from './pages/Cart';
+import Profile from './pages/Profile';
+import Checkout from './pages/Checkout';
+import TrackOrder from './pages/TrackOrder';
+import SizeGuide from './pages/SizeGuide';
+import ShippingInfo from './pages/ShippingInfo';
+import ReturnsExchanges from './pages/ReturnsExchanges';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import NotFound from './pages/NotFound';
+import { Routes, Route, useSearchParams } from 'react-router-dom';
 import './App.css';
 
 /**
@@ -14,17 +32,24 @@ import './App.css';
  * Manages state and coordinates all child components
  */
 function App() {
+  
   const [allProducts, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [toast, setToast] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [cart, setCart] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
+  const [lastAddedItem, setLastAddedItem] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [queuedFavorite, setQueuedFavorite] = useState(null);
 
   /**
    * Check for logged in user on mount
@@ -36,18 +61,33 @@ function App() {
     
     if (token && userData) {
       setUser(JSON.parse(userData));
+      loadUserFavorites(token);
     }
     
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
-  }, []);
+
+    // Check for category in URL params
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
 
   /**
    * Save cart to localStorage
    */
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
+  /**
+   * Keep derived cartCount in sync with cart
+   */
+  useEffect(() => {
+    const count = cart.reduce((s, i) => s + (i.quantity || 1), 0);
+    setCartCount(count);
   }, [cart]);
 
   /**
@@ -62,7 +102,7 @@ function App() {
    */
   useEffect(() => {
     applyFilters();
-  }, [searchQuery, selectedCategory, allProducts]);
+  }, [searchQuery, selectedCategory, allProducts, minPrice, maxPrice]);
 
   /**
    * Show toast notification
@@ -94,6 +134,22 @@ function App() {
   };
 
   /**
+   * Load user's favorites from API
+   */
+  const loadUserFavorites = async (token) => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/recommendations/favorites', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const favoriteProducts = response.data.favorites || [];
+      setFavorites(favoriteProducts.map(fav => fav._id));
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+      // Don't show error toast for favorites loading failure
+    }
+  };
+
+  /**
    * Apply search and category filters
    */
   const applyFilters = () => {
@@ -109,6 +165,18 @@ function App() {
     // Apply category filter
     if (selectedCategory) {
       filtered = filtered.filter(product => product.category === selectedCategory);
+    }
+
+    // Apply price filters
+    const min = minPrice === '' || minPrice === null ? null : Number(minPrice);
+    const max = maxPrice === '' || maxPrice === null ? null : Number(maxPrice);
+
+    if (min !== null) {
+      filtered = filtered.filter(product => Number(product.price) >= min);
+    }
+
+    if (max !== null) {
+      filtered = filtered.filter(product => Number(product.price) <= max);
     }
 
     setFilteredProducts(filtered);
@@ -128,12 +196,31 @@ function App() {
     setSelectedCategory(category);
   };
 
+  const handlePriceChange = ({ min, max }) => {
+    setMinPrice(min === '' ? '' : min);
+    setMaxPrice(max === '' ? '' : max);
+  };
+
   /**
    * Handle authentication success
    */
   const handleAuthSuccess = (userData) => {
     setUser(userData);
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadUserFavorites(token);
+    }
     showToast(`Welcome back, ${userData.name}!`, 'success');
+    
+    // If the user had clicked favorite while logged out, process it now
+    const queued = queuedFavorite || localStorage.getItem('queuedFavorite');
+    if (queued) {
+      // clear any queuedFavorite
+      localStorage.removeItem('queuedFavorite');
+      setQueuedFavorite(null);
+      // toggle favorite now that user is logged in
+      handleToggleFavorite(queued);
+    }
   };
 
   /**
@@ -151,20 +238,28 @@ function App() {
   /**
    * Handle add to cart
    */
-  const handleAddToCart = (product) => {
-    const existingItem = cart.find(item => item._id === product._id);
-    
-    if (existingItem) {
-      setCart(cart.map(item => 
-        item._id === product._id 
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-      showToast('Quantity updated in cart', 'success');
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-      showToast('Added to cart!', 'success');
-    }
+  const handleAddToCart = (product, quantity = 1) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item._id === product._id);
+      
+      if (existingItem) {
+        const newCart = prevCart.map(item => 
+          item._id === product._id 
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+        // Updated cart created
+        showToast('Quantity updated in cart', 'success');
+        setLastAddedItem({ ...product, quantity });
+        return newCart;
+      } else {
+        const newCart = [...prevCart, { ...product, quantity }];
+        // New cart created
+        showToast('Added to cart!', 'success');
+        setLastAddedItem({ ...product, quantity });
+        return newCart;
+      }
+    });
   };
 
   /**
@@ -172,6 +267,9 @@ function App() {
    */
   const handleToggleFavorite = async (productId) => {
     if (!user) {
+      // Queue the favorite to be applied after login
+      setQueuedFavorite(productId);
+      localStorage.setItem('queuedFavorite', productId);
       showToast('Please login to add favorites', 'warning');
       setShowAuthModal(true);
       return;
@@ -179,6 +277,7 @@ function App() {
 
     try {
       const token = localStorage.getItem('token');
+      // Making API call to toggle favorite
       const response = await axios.post(
         'http://localhost:5000/api/recommendations/toggle-favorite',
         { productId },
@@ -201,49 +300,110 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header 
+        key={`header-${cartCount}`}
         onSearch={handleSearch} 
         user={user}
         onLogout={handleLogout}
         onOpenAuth={() => setShowAuthModal(true)}
-      />
-      <Hero />
-      
-      {/* Recommendations Section */}
-      <Recommendations user={user} />
-      
-      <FilterBar
         categories={categories}
-        selectedCategory={selectedCategory}
-        onCategoryChange={handleCategoryChange}
+        cart={cart}
+        cartCount={cartCount}
+        lastAddedItem={lastAddedItem}
+        onCategorySelect={handleCategoryChange}
       />
-      <main className="flex-1 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900">All Products</h2>
-              <p className="text-gray-600 mt-1">
-                Showing {filteredProducts.length} of {allProducts.length} products
-              </p>
-            </div>
-            {cart.length > 0 && (
-              <div className="flex items-center gap-2 bg-primary-50 px-4 py-2 rounded-lg">
-                <span className="text-2xl">🛒</span>
-                <span className="font-semibold text-primary-700">
-                  {cart.reduce((sum, item) => sum + item.quantity, 0)} items in cart
-                </span>
+
+      <Routes>
+        <Route path="/" element={
+          <>
+            <Hero />
+            <FeaturedSection onAddToCart={handleAddToCart} onToggleFavorite={handleToggleFavorite} favorites={favorites} user={user} />
+            <Recommendations user={user} searchTerm={searchQuery} onAddToCart={handleAddToCart} onToggleFavorite={handleToggleFavorite} favorites={favorites} />
+            <Testimonials />
+
+            {/* Shop Products Section */}
+            <section className="py-16 bg-white">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Shop Our Products</h2>
+                  <p className="text-lg text-gray-600">Discover amazing products at ShopHub</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {allProducts.slice(0, 8).map((product) => (
+                    <ProductCard 
+                      key={product._id} 
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                      onToggleFavorite={handleToggleFavorite}
+                      isFavorite={favorites?.includes(product._id)}
+                      user={user}
+                    />
+                  ))}
+                </div>
+                <div className="text-center mt-8">
+                  <button 
+                    onClick={() => document.getElementById('products').scrollIntoView({ behavior: 'smooth' })}
+                    className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+                  >
+                    View All Products
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
-          <ProductGrid 
-            products={filteredProducts} 
-            loading={loading}
-            onAddToCart={handleAddToCart}
-            onToggleFavorite={handleToggleFavorite}
-            favorites={favorites}
-          />
-        </div>
-      </main>
-      
+            </section>
+
+            <FilterBar
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              onPriceChange={handlePriceChange}
+            />
+            <main id="products" className="flex-1 py-8">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900">All Products</h2>
+                    <p className="text-gray-600 mt-1">
+                      Showing {filteredProducts.length} of {allProducts.length} products
+                    </p>
+                  </div>
+                  {cartCount > 0 && (
+                    <div className="flex items-center gap-2 bg-primary-50 px-4 py-2 rounded-lg">
+                      <span className="text-2xl">🛒</span>
+                      <span className="font-semibold text-primary-700">
+                        {cartCount} items in cart
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <ProductGrid 
+                  products={filteredProducts} 
+                  loading={loading}
+                  onAddToCart={handleAddToCart}
+                  onToggleFavorite={handleToggleFavorite}
+                  favorites={favorites}
+                  user={user}
+                />
+              </div>
+            </main>
+          </>
+        } />
+
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/track-order" element={<TrackOrder />} />
+        <Route path="/size-guide" element={<SizeGuide />} />
+        <Route path="/shipping-info" element={<ShippingInfo />} />
+        <Route path="/returns-exchanges" element={<ReturnsExchanges />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/product/:id" element={<ProductDetails onAddToCart={handleAddToCart} onToggleFavorite={handleToggleFavorite} favorites={favorites} />} />
+        <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
+        <Route path="/checkout" element={<Checkout cart={cart} setCart={setCart} />} />
+        <Route path="/profile" element={<Profile user={user} />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
       {/* Auth Modal */}
       <AuthModal 
         isOpen={showAuthModal}
@@ -259,44 +419,8 @@ function App() {
           onClose={() => setToast(null)}
         />
       )}
-      
-      <footer className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12 mt-auto">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">🛍️ ShopHub</h3>
-              <p className="text-gray-400">Your one-stop shop for amazing products at unbeatable prices.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Categories</h4>
-              <ul className="space-y-2 text-gray-400">
-                {categories.slice(0, 4).map(cat => (
-                  <li key={cat}><a href="#" className="hover:text-white transition-colors">{cat}</a></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Follow Us</h4>
-              <div className="flex gap-4 text-2xl">
-                <a href="#" className="hover:text-primary-400 transition-colors">📘</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">📷</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">🐦</a>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 ShopHub. All rights reserved. Made with ❤️</p>
-          </div>
-        </div>
-      </footer>
+
+      <Footer categories={categories} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 /**
  * Product Schema
@@ -33,7 +33,28 @@ const productSchema = new mongoose.Schema({
   description: {
     type: String,
     default: ''
-  }
+  },
+  reviews: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5
+    },
+    comment: {
+      type: String,
+      default: ''
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 }, {
   timestamps: true // Automatically adds createdAt and updatedAt fields
 });
@@ -43,4 +64,4 @@ productSchema.index({ name: 'text', category: 'text' });
 
 const Product = mongoose.model('Product', productSchema);
 
-module.exports = Product;
+export default Product;

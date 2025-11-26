@@ -1,10 +1,4 @@
-/**
- * Input Validation Utilities
- */
 
-/**
- * Validate email format
- */
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -69,7 +63,7 @@ const validateLogin = (data) => {
   };
 };
 
-module.exports = {
+export {
   isValidEmail,
   isValidPassword,
   sanitizeInput,

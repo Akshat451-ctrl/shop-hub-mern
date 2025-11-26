@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 /**
  * User Schema
@@ -25,7 +25,12 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: 'https://via.placeholder.com/150/667eea/ffffff?text=User'
+    default: '' // Will be generated dynamically in frontend
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other'],
+    default: 'other'
   },
   favorites: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -37,6 +42,16 @@ const userSchema = new mongoose.Schema({
       ref: 'Product'
     },
     viewedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  searchHistory: [{
+    term: {
+      type: String,
+      trim: true
+    },
+    searchedAt: {
       type: Date,
       default: Date.now
     }
@@ -75,4 +90,4 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+export default User;

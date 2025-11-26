@@ -21,6 +21,73 @@
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Component utilities for cards and buttons */
+@layer components {
+  .card {
+    @apply bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-shadow duration-300;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md;
+  }
+
+  .glass {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+  }
+
+  /* hero-img and btn-hero styles defined below as plain CSS (avoid @apply here) */
+}
+
+/* Hero image placeholders fallback */
+
+/* Horizontal featured scroll */
+.horizontal-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+.horizontal-scroll > div {
+  scroll-snap-align: start;
+}
+
+/* CTA */
+/* hero image utility */
+.hero-img {
+  width: 100%;
+  height: 14rem; /* h-56 */
+  object-fit: cover;
+  border-radius: 0.75rem; /* rounded-xl */
+  display: block;
+}
+
+/* hero CTA button */
+.btn-hero {
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  color: #111827; /* text-black */
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.12);
+  background-image: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+  transform: translateZ(0);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.btn-hero:hover { transform: scale(1.03); }

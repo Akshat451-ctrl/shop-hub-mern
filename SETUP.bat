@@ -1,4 +1,4 @@
-@echo off
+netstat -aon | findstr :5000netstat -aon | findstr :5000@echo off
 echo ========================================
 echo ShopHub MERN Stack Setup Script
 echo ========================================

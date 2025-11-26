@@ -5,7 +5,7 @@ import ProductCard from './ProductCard';
  * ProductGrid Component
  * Displays grid of product cards with enhanced features
  */
-const ProductGrid = ({ products, loading, onAddToCart, onToggleFavorite, favorites = [] }) => {
+const ProductGrid = ({ products, loading, onAddToCart, onToggleFavorite, favorites = [], user }) => {
   if (loading) {
     return (
       <div className="text-center py-16">
@@ -35,6 +35,7 @@ const ProductGrid = ({ products, loading, onAddToCart, onToggleFavorite, favorit
           onAddToCart={onAddToCart}
           onToggleFavorite={onToggleFavorite}
           isFavorite={favorites?.includes(product._id)}
+          user={user}
         />
       ))}
     </div>
