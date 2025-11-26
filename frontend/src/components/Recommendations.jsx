@@ -22,8 +22,8 @@ const Recommendations = ({ user, searchTerm, onAddToCart, onToggleFavorite, favo
       
       // If a searchTerm is provided, include it as a query param so backend can prefer search-based recommendations
       const url = searchTerm && searchTerm.trim()
-        ? `https://shop-hub-mern.onrender.com/api/recommendations?q=${encodeURIComponent(searchTerm.trim())}`
-        : 'https://shop-hub-mern.onrender.com/api/recommendations';
+        ? `/api/recommendations?q=${encodeURIComponent(searchTerm.trim())}`
+        : '/api/recommendations';
 
       const response = await axios.get(url, { headers });
       const recommendationsData = response.data.recommendations || response.data;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { getProxiedImageUrl } from '../utils/api';
 
 /**
  * Header Component
@@ -86,7 +87,7 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
     }
 
     try {
-      const response = await axios.get(`https://shop-hub-mern.onrender.com/api/search?q=${query}`);
+      const response = await axios.get(`/api/search?q=${query}`);
       const productsData = response.data.products || response.data;
       // Limit suggestions shown to at most 5 items
       setSuggestions((productsData || []).slice(0, 5));

@@ -52,13 +52,13 @@ const Profile = ({ user }) => {
       const token = localStorage.getItem('token')
       
       // Fetch favorites
-      const favRes = await axios.get('https://shop-hub-mern.onrender.com/api/recommendations/favorites', {
+      const favRes = await axios.get('/api/recommendations/favorites', {
         headers: { Authorization: `Bearer ${token}` }
       })
       setFavorites(favRes.data.favorites || [])
 
       // Fetch user's reviews
-      const reviewRes = await axios.get('https://shop-hub-mern.onrender.com/api/recommendations/reviews', {
+      const reviewRes = await axios.get('/api/recommendations/reviews', {
         headers: { Authorization: `Bearer ${token}` }
       })
       setReviews(reviewRes.data.reviews || [])
@@ -91,7 +91,7 @@ const Profile = ({ user }) => {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await axios.put('https://shop-hub-mern.onrender.com/api/auth/avatar', formData, {
+      const response = await axios.put('/api/auth/avatar', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
