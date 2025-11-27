@@ -11,7 +11,7 @@ import Testimonials from './components/Testimonials';
 import AuthModal from './components/AuthModal';
 import Toast from './components/Toast';
 import Footer from './components/Footer';
-import DarkModeToggle from './components/DarkModeToggle';
+// DarkModeToggle removed from navbar; component retained if needed later
 import ScrollToTop from './components/ScrollToTop';
 import Breadcrumbs from './components/Breadcrumbs';
 import RecentlyViewed from './components/RecentlyViewed';

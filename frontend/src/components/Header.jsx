@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { getProxiedImageUrl } from '../utils/api';
-import DarkModeToggle from './DarkModeToggle';
+// Dark mode toggle removed from navbar
 
 /**
  * Header Component
@@ -264,9 +264,6 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
 
           {/* Right: Actions - Always visible */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Dark Mode Toggle */}
-            <DarkModeToggle />
-
             {/* Categories dropdown - Hidden on mobile */}
             <div className="relative hidden md:block">
               <button onClick={() => setShowCategories(!showCategories)} className="text-sm text-gray-700 px-3 py-2 rounded hover:bg-gray-50 flex items-center gap-1">
