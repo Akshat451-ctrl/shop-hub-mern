@@ -248,6 +248,158 @@ const sampleProducts = [
     rating: 4.6,
     image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&h=500&fit=crop',
     description: 'Cozy hooded sweatshirt for casual wear'
+  },
+  {
+    name: 'Winter Jacket Waterproof',
+    price: 129.99,
+    category: 'Clothing',
+    rating: 4.7,
+    image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&h=500&fit=crop',
+    description: 'Insulated waterproof winter jacket'
+  },
+  {
+    name: 'Sneakers Running',
+    price: 79.99,
+    category: 'Clothing',
+    rating: 4.5,
+    image: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=500&h=500&fit=crop',
+    description: 'Lightweight running sneakers with cushioning'
+  },
+  {
+    name: 'Sunglasses Polarized UV',
+    price: 59.99,
+    category: 'Accessories',
+    rating: 4.4,
+    image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&h=500&fit=crop',
+    description: 'Polarized sunglasses with UV protection'
+  },
+  {
+    name: 'Leather Wallet RFID',
+    price: 34.99,
+    category: 'Accessories',
+    rating: 4.6,
+    image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=500&h=500&fit=crop',
+    description: 'Genuine leather wallet with RFID blocking'
+  },
+  {
+    name: 'Wrist Watch Analog',
+    price: 149.99,
+    category: 'Accessories',
+    rating: 4.8,
+    image: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&h=500&fit=crop',
+    description: 'Classic analog wristwatch with leather strap'
+  },
+  {
+    name: 'Backpack Travel 40L',
+    price: 89.99,
+    category: 'Accessories',
+    rating: 4.7,
+    image: 'https://images.unsplash.com/photo-1622260614927-9c2e4e0e8e0e?w=500&h=500&fit=crop',
+    description: 'Large capacity travel backpack with multiple compartments'
+  },
+  {
+    name: 'Desk Chair Ergonomic',
+    price: 199.99,
+    category: 'Home',
+    rating: 4.6,
+    image: 'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=500&h=500&fit=crop',
+    description: 'Ergonomic office chair with lumbar support'
+  },
+  {
+    name: 'Standing Desk Adjustable',
+    price: 299.99,
+    category: 'Home',
+    rating: 4.8,
+    image: 'https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?w=500&h=500&fit=crop',
+    description: 'Electric height-adjustable standing desk'
+  },
+  {
+    name: 'Monitor Arm Mount',
+    price: 49.99,
+    category: 'Accessories',
+    rating: 4.5,
+    image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&h=500&fit=crop',
+    description: 'Adjustable monitor arm for ergonomic viewing'
+  },
+  {
+    name: 'Webcam 4K Ultra HD',
+    price: 99.99,
+    category: 'Electronics',
+    rating: 4.7,
+    image: 'https://images.unsplash.com/photo-1588508065123-287b28e013da?w=500&h=500&fit=crop',
+    description: '4K webcam with auto-focus and ring light'
+  },
+  {
+    name: 'Microphone USB Condenser',
+    price: 79.99,
+    category: 'Electronics',
+    rating: 4.6,
+    image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=500&h=500&fit=crop',
+    description: 'Professional USB condenser microphone for streaming'
+  },
+  {
+    name: 'Ring Light LED',
+    price: 39.99,
+    category: 'Electronics',
+    rating: 4.4,
+    image: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=500&h=500&fit=crop',
+    description: 'LED ring light for photography and video'
+  },
+  {
+    name: 'Green Screen Backdrop',
+    price: 29.99,
+    category: 'Electronics',
+    rating: 4.3,
+    image: 'https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=500&h=500&fit=crop',
+    description: 'Collapsible green screen for video production'
+  },
+  {
+    name: 'Graphics Tablet Drawing',
+    price: 69.99,
+    category: 'Electronics',
+    rating: 4.5,
+    image: 'https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=500&h=500&fit=crop',
+    description: 'Digital drawing tablet with pressure sensitivity'
+  },
+  {
+    name: 'Printer Wireless All-in-One',
+    price: 149.99,
+    category: 'Electronics',
+    rating: 4.4,
+    image: 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=500&h=500&fit=crop',
+    description: 'Wireless printer with scanner and copier'
+  },
+  {
+    name: 'Paper Shredder Cross-Cut',
+    price: 59.99,
+    category: 'Home',
+    rating: 4.3,
+    image: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=500&h=500&fit=crop',
+    description: 'Cross-cut paper shredder for home office'
+  },
+  {
+    name: 'Desk Organizer Bamboo',
+    price: 24.99,
+    category: 'Home',
+    rating: 4.5,
+    image: 'https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?w=500&h=500&fit=crop',
+    description: 'Eco-friendly bamboo desk organizer'
+  },
+  {
+    name: 'Whiteboard Magnetic',
+    price: 34.99,
+    category: 'Home',
+    rating: 4.4,
+    image: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=500&h=500&fit=crop',
+    description: 'Magnetic dry erase whiteboard with markers'
+  },
+  {
+    name: 'Bookshelf 5-Tier',
+    price: 79.99,
+    category: 'Home',
+    rating: 4.6,
+    image: 'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=500&h=500&fit=crop',
+    description: 'Modern 5-tier bookshelf for storage'
   }
 ];
 

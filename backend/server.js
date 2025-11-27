@@ -14,9 +14,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // YEHI LINE SABSE ZAROORI HAI → Render pe Atlas connect karega
-const MONGODB_URI = 
-  process.env.MONGODB_URI || 
-  process.env.MONGO_URI || 
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  process.env.MONGO_URI ||
   'mongodb://localhost:27017/shophub';
 
 // CORS Configuration - Allow your Vercel frontend
@@ -24,8 +24,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'https://shop-hub-mern.vercel.app',
-  'https://shop-hub-mern-frontend.vercel.app',
-  'https://shop-hub-mern-git-main.vercel.app',
+  // 'https://shop-hub-mern-frontend.vercel.app',
+  // 'https://shop-hub-mern-git-main.vercel.app',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -33,7 +33,7 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
       callback(null, true);
     } else {
@@ -71,7 +71,7 @@ app.get('/proxy', async (req, res) => {
 
     const fetch = (await import('node-fetch')).default;
     const response = await fetch(imageUrl);
-    
+
     if (!response.ok) {
       return res.status(response.status).json({ error: 'Failed to fetch image' });
     }
@@ -116,7 +116,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('MongoDB Connected Successfully (Atlas/Render Ready)');
-    
+
     const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`Live API → https://your-backend.onrender.com`);
