@@ -32,4 +32,20 @@ axios.interceptors.response.use(
 	}
 );
 
+// Request interceptor: rewrite any accidental localhost urls to the API_BASE_URL
+axios.interceptors.request.use((config) => {
+	try {
+		const url = config.url || '';
+		if (typeof url === 'string' && url.includes('http://localhost:5000')) {
+			// Replace any hard-coded localhost with the proper API_BASE_URL
+			config.url = url.replace('http://localhost:5000', API_BASE_URL);
+			// Also ensure baseURL is correct
+			config.baseURL = API_BASE_URL;
+		}
+	} catch (e) {
+		// ignore
+	}
+	return config;
+}, (error) => Promise.reject(error));
+
 export default axios;

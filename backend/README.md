@@ -93,6 +93,20 @@ npm run dev
 
 If `JWT_SECRET` differs between where tokens were issued and where they are verified (e.g., you change the secret), token verification will fail with `invalid signature` and users will need to re-login.
 
+## Deploy Checklist
+1. Ensure you set the following env vars on your hosting platform (Render, Vercel, etc.):
+  - `MONGODB_URI` – Connection string for MongoDB Atlas
+  - `JWT_SECRET` – Secret used to sign/verify JWT tokens
+  - `VITE_API_URL` – Frontend build-time API base URL (e.g., `https://shop-hub-mern.onrender.com`)
+2. If you're rotating `JWT_SECRET`, set `JWT_PREV_SECRET` to allow tokens signed by the old secret to remain valid during transition.
+3. After changing environment variables, redeploy the services:
+  - `backend`: restart or redeploy so it picks up `JWT_SECRET` and `MONGODB_URI`.
+  - `frontend`: rebuild and redeploy with `VITE_API_URL` set to production URL. If you don't set `VITE_API_URL`, the app will use `https://shop-hub-mern.onrender.com` as default.
+4. Verify the live site: open the site and confirm API requests go to `https://shop-hub-mern.onrender.com/api/...` and not `http://localhost:5000`.
+5. If you see `invalid signature` errors in the backend logs:
+  - Confirm the token presented is using the same secret as `JWT_SECRET`.
+  - Consider clearing client-side tokens (force login) so new tokens get issued.
+
 
 ## Database Schema
 

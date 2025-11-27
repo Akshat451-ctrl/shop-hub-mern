@@ -86,6 +86,12 @@ app.use(notFound);
 app.use(errorHandler);
 
 // MongoDB Connection + Server Start
+// Ensure JWT_SECRET is configured in production otherwise exit to avoid insecure default usage
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('JWT_SECRET is NOT configured in production. Please set JWT_SECRET environment variable. Exiting.');
+  process.exit(1);
+}
+
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('MongoDB Connected Successfully (Atlas/Render Ready)');
@@ -126,4 +132,17 @@ mongoose.connect(MONGODB_URI)
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Rejection:', err);
   process.exit(1);
+});
+
+// Lightweight status endpoint to help debug environment and connectivity
+app.get('/__status', (req, res) => {
+  const jwtConfigured = !!process.env.JWT_SECRET;
+  const dbConnected = mongoose.connection.readyState === 1;
+  res.json({
+    success: true,
+    environment: process.env.NODE_ENV || 'development',
+    jwtConfigured,
+    dbConnected,
+    port: PORT
+  });
 });
