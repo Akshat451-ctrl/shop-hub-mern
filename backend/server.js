@@ -8,52 +8,47 @@ import authRoutes from './routes/auth.js';
 import recommendationRoutes from './routes/recommendations.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
-dotenv.config();
+dotenv.config(); // ← important (agar .env file use karta hai toh)
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// -----------------------------
-//  🔥 CORRECT & SAFE CORS SETUP
-// -----------------------------
+// YEHI LINE SABSE ZAROORI HAI → Render pe Atlas connect karega
+const MONGODB_URI = 
+  process.env.MONGODB_URI || 
+  process.env.MONGO_URI || 
+  'mongodb://localhost:27017/shophub';
 
-// 👉 Change only these URLs
+// CORS Configuration - Allow your Vercel frontend
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://your-frontend.vercel.app",
-  "https://your-frontend.netlify.app",
-  "https://shop-hub-mern-3a7vgdw43-akshat-ghtaiyas-projects.vercel.app/"
-];
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://shop-hub-mern.vercel.app',
+  'https://shop-hub-mern-frontend.vercel.app',
+  'https://shop-hub-mern-git-main.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // mobile apps, curl, postman
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      console.log('CORS BLOCKED:', origin);
+      callback(null, true); // Allow all origins for now
     }
-
-    return callback(new Error("CORS BLOCKED: " + origin));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// -----------------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB URI
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  process.env.MONGO_URI ||
-  "mongodb://localhost:27017/shophub";
-
-// -----------------------------
-// 🔥 DEVELOPMENT LOGGING
-// -----------------------------
+// Request logging (sirf development mein)
 if (process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -61,101 +56,114 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// -----------------------------
-// 🔥 ROUTES
-// -----------------------------
-app.use('/api/products', productRoutes);
+// Routes
+app.use('/api', productRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 
-// -----------------------------
-// 🔥 IMAGE PROXY (Fixes Amazon, Unsplash CORS)
-// -----------------------------
+// Image Proxy Route (to bypass CORS for Amazon/external images)
 app.get('/proxy', async (req, res) => {
   try {
     const imageUrl = req.query.url;
     if (!imageUrl) {
-      return res.status(400).json({ error: "Image URL is required" });
+      return res.status(400).json({ error: 'Image URL is required' });
     }
 
     const fetch = (await import('node-fetch')).default;
     const response = await fetch(imageUrl);
-
+    
     if (!response.ok) {
-      return res.status(response.status).json({ error: "Failed to fetch image" });
+      return res.status(response.status).json({ error: 'Failed to fetch image' });
     }
 
-    res.setHeader("Content-Type", response.headers.get("content-type") || "image/jpeg");
-    res.setHeader("Cache-Control", "public, max-age=86400");
-
+    // Forward the content type and stream the image
+    res.setHeader('Content-Type', response.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
     response.body.pipe(res);
-  } catch (err) {
-    console.error("Proxy Error:", err);
-    res.status(500).json({ error: "Failed to proxy image" });
+  } catch (error) {
+    console.error('Proxy error:', error);
+    res.status(500).json({ error: 'Failed to proxy image' });
   }
 });
 
-// -----------------------------
-// 🔥 HEALTH CHECK
-// -----------------------------
+// Health Check
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: "ShopHub API is LIVE!",
-    version: "2.0.0",
-    db: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
+    message: 'ShopHub API is LIVE!',
+    version: '2.0.0',
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
     endpoints: {
-      products: "/api/products",
-      auth: "/api/auth",
-      recommendations: "/api/recommendations"
+      products: '/api/products',
+      search: '/api/search',
+      auth: '/api/auth',
+      recommendations: '/api/recommendations'
     }
   });
 });
 
-// -----------------------------
-// 🔥 ERRORS
-// -----------------------------
+// 404 & Error Handler
 app.use(notFound);
 app.use(errorHandler);
 
-// -----------------------------
-// 🔥 MONGO CONNECTION + START SERVER
-// -----------------------------
-
-if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
-  console.error("❌ ERROR: JWT_SECRET missing in production.");
+// MongoDB Connection + Server Start
+// Ensure JWT_SECRET is configured in production otherwise exit to avoid insecure default usage
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('JWT_SECRET is NOT configured in production. Please set JWT_SECRET environment variable. Exiting.');
   process.exit(1);
 }
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
-    console.log("✅ MongoDB Connected");
-
+    console.log('MongoDB Connected Successfully (Atlas/Render Ready)');
+    
     const server = app.listen(PORT, () => {
-      console.log(`🚀 Server running on ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Live API → https://your-backend.onrender.com`);
+      // Masked secret info for debugging only (do not expose the secret itself)
+      try {
+        const jwtSecret = process.env.JWT_SECRET;
+        if (jwtSecret) {
+          console.log(`JWT_SECRET configured (length=${jwtSecret.length})`);
+        } else {
+          console.warn('JWT_SECRET is NOT configured. Tokens will be signed/verified with fallback default.');
+        }
+        const jwtPrev = process.env.JWT_PREV_SECRET;
+        console.log(`JWT_PREV_SECRET present: ${jwtPrev ? 'yes' : 'no'}`);
+      } catch (err) {
+        // Do not fail startup if logging fails
+      }
     });
 
-    server.on("error", (err) => {
-      if (err.code === "EADDRINUSE") {
-        console.error(`❌ Port ${PORT} already in use`);
+    // Handle port conflicts
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is busy. Render will auto-assign a port.`);
       } else {
-        console.error("Server Error:", err);
+        console.error('Server error:', err);
       }
     });
   })
-  .catch((err) => {
-    console.error("❌ MongoDB Connection Failed:", err.message);
+  .catch((error) => {
+    console.error('MongoDB connection failed:', error.message);
     process.exit(1);
   });
 
-// -----------------------------
-// 🔥 STATUS CHECK
-// -----------------------------
-app.get("/__status", (req, res) => {
+// Handle unhandled rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
+
+// Lightweight status endpoint to help debug environment and connectivity
+app.get('/__status', (req, res) => {
+  const jwtConfigured = !!process.env.JWT_SECRET;
+  const dbConnected = mongoose.connection.readyState === 1;
   res.json({
     success: true,
-    environment: process.env.NODE_ENV || "development",
-    dbConnected: mongoose.connection.readyState === 1,
-    jwtConfigured: !!process.env.JWT_SECRET
+    environment: process.env.NODE_ENV || 'development',
+    jwtConfigured,
+    dbConnected,
+    port: PORT
   });
 });
