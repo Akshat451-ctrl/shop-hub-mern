@@ -1,11 +1,10 @@
 import express from 'express';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
-import jwt from 'jsonwebtoken';
+import { verifyTokenWithFallback } from '../utils/jwtUtils.js';
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 /**
  * GET /api/recommendations
@@ -21,7 +20,7 @@ router.get('/', async (req, res) => {
 
     if (token) {
       try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = verifyTokenWithFallback(token);
         const user = await User.findById(decoded.userId)
           .populate('viewHistory.product')
           .populate('favorites');
@@ -115,8 +114,12 @@ router.post('/track-view', async (req, res) => {
     if (!token || !productId) {
       return res.status(400).json({ message: 'Token and productId required' });
     }
-
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      decoded = verifyTokenWithFallback(token);
+    } catch (err) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
     const user = await User.findById(decoded.userId);
 
     if (!user) {
@@ -154,7 +157,12 @@ router.post('/toggle-favorite', async (req, res) => {
       });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      decoded = verifyTokenWithFallback(token);
+    } catch (err) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
     const user = await User.findById(decoded.userId);
 
     if (!user) {
@@ -208,8 +216,12 @@ router.get('/favorites', async (req, res) => {
         message: 'Authentication required' 
       });
     }
-
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      decoded = verifyTokenWithFallback(token);
+    } catch (err) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
     const user = await User.findById(decoded.userId).populate('favorites');
 
     if (!user) {
@@ -244,7 +256,12 @@ router.get('/reviews', async (req, res) => {
       });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      decoded = verifyTokenWithFallback(token);
+    } catch (err) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
     const userId = decoded.userId;
 
     const products = await Product.find({ 'reviews.user': userId })

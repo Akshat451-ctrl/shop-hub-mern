@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+import { verifyTokenWithFallback } from '../utils/jwtUtils.js';
 
 /**
  * Authentication Middleware
@@ -18,17 +17,17 @@ const authenticateToken = (req, res, next) => {
       });
     }
 
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-      if (err) {
-        return res.status(403).json({ 
-          success: false,
-          message: 'Invalid or expired token' 
-        });
-      }
-
+    try {
+      const decoded = verifyTokenWithFallback(token);
       req.user = decoded;
       next();
-    });
+    } catch (err) {
+      // Invalid token or verification failed
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid or expired token' 
+      });
+    }
   } catch (error) {
     console.error('Auth middleware error:', error);
     res.status(500).json({ 
@@ -48,11 +47,12 @@ const optionalAuth = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
-      jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (!err) {
-          req.user = decoded;
-        }
-      });
+      try {
+        const decoded = verifyTokenWithFallback(token);
+        if (decoded) req.user = decoded;
+      } catch (err) {
+        // Ignore verification errors in optional auth
+      }
     }
     next();
   } catch (error) {

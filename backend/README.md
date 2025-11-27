@@ -86,6 +86,14 @@ For development with auto-reload:
 npm run dev
 ```
 
+## Important Environment Variables
+
+- `JWT_SECRET` (required in production): Secret used to sign and verify JWT tokens. Set this on your hosting environment (Render, Vercel, etc.) to a long, random string.
+- `JWT_PREV_SECRET` (optional): If you rotate your JWT secret, set this to the previous secret so existing tokens remain valid during a grace period.
+
+If `JWT_SECRET` differs between where tokens were issued and where they are verified (e.g., you change the secret), token verification will fail with `invalid signature` and users will need to re-login.
+
+
 ## Database Schema
 
 ### Product Model
