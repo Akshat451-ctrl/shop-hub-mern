@@ -1,6 +1,19 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://shop-hub-mern.onrender.com';
+const envBase = import.meta.env.VITE_API_URL || '';
+let API_BASE_URL = envBase || 'https://shop-hub-mern.onrender.com';
+
+// If envBase explicitly points to a localhost address but the site is running
+// on a non-localhost origin (production), override to the known production backend.
+try {
+	if (envBase && envBase.includes('localhost') && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+		// Fallback to the live backend if VITE_API_URL mistakenly uses localhost
+		API_BASE_URL = 'https://shop-hub-mern.onrender.com';
+	}
+} catch (err) {
+	// No-op if window is not available or any error occurs
+}
+
 axios.defaults.baseURL = API_BASE_URL;
 
 // Response interceptor to handle 401 Unauthorized globally

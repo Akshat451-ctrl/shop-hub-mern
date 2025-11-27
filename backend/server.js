@@ -93,6 +93,19 @@ mongoose.connect(MONGODB_URI)
     const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`Live API → https://your-backend.onrender.com`);
+      // Masked secret info for debugging only (do not expose the secret itself)
+      try {
+        const jwtSecret = process.env.JWT_SECRET;
+        if (jwtSecret) {
+          console.log(`JWT_SECRET configured (length=${jwtSecret.length})`);
+        } else {
+          console.warn('JWT_SECRET is NOT configured. Tokens will be signed/verified with fallback default.');
+        }
+        const jwtPrev = process.env.JWT_PREV_SECRET;
+        console.log(`JWT_PREV_SECRET present: ${jwtPrev ? 'yes' : 'no'}`);
+      } catch (err) {
+        // Do not fail startup if logging fails
+      }
     });
 
     // Handle port conflicts
