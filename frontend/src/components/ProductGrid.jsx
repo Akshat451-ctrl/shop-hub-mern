@@ -1,5 +1,6 @@
 import React from 'react';
 import ProductCard from './ProductCard';
+import ProductSkeleton from './ProductSkeleton';
 
 /**
  * ProductGrid Component
@@ -8,10 +9,16 @@ import ProductCard from './ProductCard';
 const ProductGrid = ({ products, loading, onAddToCart, onToggleFavorite, favorites = [], user }) => {
   if (loading) {
     return (
-      <div className="text-center py-16">
-        <div className="inline-block w-16 h-16 border-4 border-gray-200 border-t-primary-500 rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-600 text-lg font-medium">Loading amazing products...</p>
-        <p className="text-gray-400 text-sm mt-2">Please wait a moment</p>
+      <div className="mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, index) => (
+            <ProductSkeleton key={index} />
+          ))}
+        </div>
+        <div className="text-center mt-8">
+          <p className="text-gray-600 text-lg font-medium">Loading amazing products...</p>
+          <p className="text-gray-400 text-sm mt-2">Please wait a moment</p>
+        </div>
       </div>
     );
   }
@@ -29,8 +36,8 @@ const ProductGrid = ({ products, loading, onAddToCart, onToggleFavorite, favorit
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
       {products.map((product) => (
-        <ProductCard 
-          key={product._id} 
+        <ProductCard
+          key={product._id}
           product={product}
           onAddToCart={onAddToCart}
           onToggleFavorite={onToggleFavorite}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getProxiedImageUrl } from '../utils/api';
+import DarkModeToggle from './DarkModeToggle';
 
 /**
  * Header Component
@@ -13,7 +14,9 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef(null);
+  const debounceTimer = useRef(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [showCartPopup, setShowCartPopup] = useState(false);
@@ -65,7 +68,13 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      // clear any pending debounce timer
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
   }, []);
 
   // Show cart popup when lastAddedItem changes
@@ -119,10 +128,11 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
   /**
    * Handle suggestion click
    */
-  const handleSuggestionClick = (productName) => {
-    setSearchTerm(productName);
+  const handleSuggestionClick = (productId) => {
     setShowSuggestions(false);
-    onSearch(productName);
+    if (productId) {
+      navigate(`/product/${productId}`);
+    }
   };
 
   /**
@@ -209,11 +219,20 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
               <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden shadow-sm">
                 <input
                   type="text"
+                  aria-label="Search products"
+                  aria-expanded={showSuggestions}
+                  aria-controls="search-suggestions"
                   className="flex-1 px-4 py-2 text-gray-800 outline-none placeholder-gray-500"
                   placeholder="Search products, categories..."
                   value={searchTerm}
                   onChange={handleSearchChange}
-                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                  onFocus={() => {
+                    if (searchTerm && searchTerm.trim()) {
+                      fetchSuggestions(searchTerm);
+                    } else if (suggestions.length > 0) {
+                      setShowSuggestions(true);
+                    }
+                  }}
                 />
                 <button type="submit" className="px-4 text-gray-600 hover:text-gray-800">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -223,26 +242,19 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
               </div>
 
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl max-h-72 overflow-y-auto z-50">
+                <div id="search-suggestions" role="listbox" aria-label="Search suggestions" className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl max-h-72 overflow-y-auto z-50">
                   {suggestions.map((product, idx) => (
                     <div
                       key={product._id}
                       role="option"
                       tabIndex={0}
                       aria-selected={false}
-                      className="flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
-                      onClick={() => handleSuggestionClick(product.name)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSuggestionClick(product.name); } }}
+                      className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                      onClick={() => handleSuggestionClick(product._id)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSuggestionClick(product._id); } }}
                     >
-                      <img 
-                        src={getProxiedImageUrl(product.image)}
-                        alt={product.name} 
-                        className="w-12 h-12 object-cover rounded mr-3"
-                      />
-                      <div className="flex-1">
-                        <div className="text-gray-900 font-medium">{product.name}</div>
-                        <div className="text-primary-500 font-semibold">${product.price}</div>
-                      </div>
+                      <div className="text-gray-900 font-medium">{product.name}</div>
+                      <div className="text-xs text-gray-500 mt-1">{product.category || 'Product'}</div>
                     </div>
                   ))}
                 </div>
@@ -252,6 +264,9 @@ const Header = ({ onSearch, user, onLogout, onOpenAuth, categories = [], cart = 
 
           {/* Right: Actions - Always visible */}
           <div className="flex items-center gap-2 sm:gap-4">
+            {/* Dark Mode Toggle */}
+            <DarkModeToggle />
+
             {/* Categories dropdown - Hidden on mobile */}
             <div className="relative hidden md:block">
               <button onClick={() => setShowCategories(!showCategories)} className="text-sm text-gray-700 px-3 py-2 rounded hover:bg-gray-50 flex items-center gap-1">

@@ -11,6 +11,11 @@ import Testimonials from './components/Testimonials';
 import AuthModal from './components/AuthModal';
 import Toast from './components/Toast';
 import Footer from './components/Footer';
+import DarkModeToggle from './components/DarkModeToggle';
+import ScrollToTop from './components/ScrollToTop';
+import Breadcrumbs from './components/Breadcrumbs';
+import RecentlyViewed from './components/RecentlyViewed';
+import QuickViewModal from './components/QuickViewModal';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import ProductDetails from './pages/ProductDetails';
@@ -50,6 +55,8 @@ function App() {
   const [lastAddedItem, setLastAddedItem] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [queuedFavorite, setQueuedFavorite] = useState(null);
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [showQuickView, setShowQuickView] = useState(false);
 
   /**
    * Check for logged in user on mount
@@ -91,8 +98,20 @@ function App() {
   }, [cart]);
 
   /**
-   * Fetch all products on component mount
+   * Handle opening quick view modal
    */
+  const handleQuickView = (product) => {
+    setQuickViewProduct(product);
+    setShowQuickView(true);
+  };
+
+  /**
+   * Handle closing quick view modal
+   */
+  const handleCloseQuickView = () => {
+    setShowQuickView(false);
+    setQuickViewProduct(null);
+  };
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -318,6 +337,7 @@ function App() {
             <Hero />
             <FeaturedSection onAddToCart={handleAddToCart} onToggleFavorite={handleToggleFavorite} favorites={favorites} user={user} />
             <Recommendations user={user} searchTerm={searchQuery} onAddToCart={handleAddToCart} onToggleFavorite={handleToggleFavorite} favorites={favorites} />
+            <RecentlyViewed />
             <Testimonials />
 
             {/* Shop Products Section */}
@@ -419,6 +439,20 @@ function App() {
           onClose={() => setToast(null)}
         />
       )}
+
+      {/* Quick View Modal */}
+      <QuickViewModal
+        product={quickViewProduct}
+        isOpen={showQuickView}
+        onClose={handleCloseQuickView}
+        onAddToCart={handleAddToCart}
+        onToggleFavorite={handleToggleFavorite}
+        isFavorite={quickViewProduct ? favorites?.includes(quickViewProduct._id) : false}
+        user={user}
+      />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
 
       <Footer categories={categories} />
     </div>
