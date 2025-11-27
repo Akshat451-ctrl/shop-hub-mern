@@ -8,7 +8,8 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+// Read JWT secret at runtime to avoid import-time env issues
+const getJwtSecret = () => process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Configure multer for avatar uploads
 const storage = multer.diskStorage({
@@ -88,7 +89,7 @@ router.post('/register', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '7d' }
     );
 
@@ -153,7 +154,7 @@ router.post('/login', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '7d' }
     );
 

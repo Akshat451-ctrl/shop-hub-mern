@@ -64,21 +64,58 @@ app.use('/api/recommendations', recommendationRoutes);
 // Image Proxy Route (to bypass CORS for Amazon/external images)
 app.get('/proxy', async (req, res) => {
   try {
-    const imageUrl = req.query.url;
+    let imageUrl = (req.query.url || '').toString().trim();
     if (!imageUrl) {
       return res.status(400).json({ error: 'Image URL is required' });
     }
 
+    // Some image URLs in the wild (or in DB) have small typos like `hhttps://` or `hhttp://`.
+    // Try to normalize common mistakes before fetching.
+    imageUrl = decodeURIComponent(imageUrl);
+    imageUrl = imageUrl.replace(/^\s+|\s+$/g, '');
+    // Fix common duplicated leading characters like `hhttps` or `hhttp`
+    imageUrl = imageUrl.replace(/^hhttps:/i, 'https:').replace(/^hhttp:/i, 'http:');
+
+    // If scheme missing, default to https
+    if (!/^https?:\/\//i.test(imageUrl)) {
+      imageUrl = `https://${imageUrl}`;
+    }
+
+    // Validate URL
+    let parsed;
+    try {
+      parsed = new URL(imageUrl);
+    } catch (err) {
+      console.warn('Invalid image URL provided to proxy:', imageUrl);
+      return res.status(400).json({ error: 'Invalid image URL' });
+    }
+
     const fetch = (await import('node-fetch')).default;
-    const response = await fetch(imageUrl);
+    const AbortController = globalThis.AbortController || (await import('abort-controller')).default;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+    let response;
+    try {
+      response = await fetch(parsed.toString(), { signal: controller.signal, headers: { 'User-Agent': 'ShopHub-Image-Proxy/1.0' } });
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === 'AbortError') {
+        console.warn('Image fetch timeout for', imageUrl);
+        return res.status(408).json({ error: 'Image fetch timeout' });
+      }
+      console.error('Proxy fetch error:', err);
+      return res.status(502).json({ error: 'Failed to fetch image' });
+    }
+
+    clearTimeout(timeout);
 
     if (!response.ok) {
       return res.status(response.status).json({ error: 'Failed to fetch image' });
     }
 
-    // Forward the content type and stream the image
     res.setHeader('Content-Type', response.headers.get('content-type') || 'image/jpeg');
-    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    res.setHeader('Cache-Control', 'public, max-age=86400');
     response.body.pipe(res);
   } catch (error) {
     console.error('Proxy error:', error);
