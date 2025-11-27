@@ -2,7 +2,15 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Product from './models/Product.js';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/shophub';
+dotenv.config(); // Load environment variables FIRST
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('❌ MONGODB_URI environment variable is required. Please check your .env file.');
+  console.error('Expected: MONGODB_URI=mongodb+srv://statusdekho3:Akshat123@cluster0.bqh7iqm.mongodb.net/shophub?retryWrites=true&w=majority');
+  process.exit(1);
+}
 
 /**
  * Sample products data - 20 realistic products across different categories
